@@ -1,0 +1,24 @@
+{
+  "author" : "",
+  "commands" : [
+    {
+      "script" : "script.cocoascript",
+      "name" : "Mask",
+      "handlers" : {
+        "run" : "quickMask"
+      },
+      "identifier" : "quick-mask"
+    }
+  ],
+  "menu" : {
+    "items" : [
+      "quick-mask"
+    ],
+    "title" : "Quick Mask"
+  },
+  "identifier" : "https://github.com/kupe517/sketch-quick-mask",
+  "version" : "1.0",
+  "description" : "",
+  "authorEmail" : "",
+  "name" : "Quick Mask"
+}

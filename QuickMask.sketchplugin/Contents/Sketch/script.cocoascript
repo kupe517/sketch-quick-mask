@@ -1,0 +1,35 @@
+var quickMask = function(context) {
+  var doc        = context.document;
+  var selection  = context.selection;
+  var pluginName = 'Quick Crop';
+
+  var sketch = context.api()
+  var document = sketch.selectedDocument;
+  var page = document.selectedPage;
+  var currentArtboard = doc.currentPage().currentArtboard();
+  // log(currentArtboard)
+
+  if ([selection count] > 0) {
+    var layer = selection[0]
+    var layerRect = [layer rect]
+    var layerFrame = [layer frame]
+    var layerWidth = layerRect.size.width
+    var layerHeight = layerRect.size.height
+    var layerY = layerRect.origin.y
+    var layerX = layerRect.origin.x
+    // log(layerY +  " " + layerX)
+
+    var newRect = MSRectangleShape.new();
+    newRect.frame = MSRect.rectWithRect(NSMakeRect(layerX, layerY, layerWidth, layerHeight));
+    var rectGroup = MSShapeGroup.shapeWithPath(newRect);
+    [currentArtboard addLayers:[rectGroup]];
+    rectGroup.setIsSelected(true);
+    var newSelection = [doc findSelectedLayers];
+    var group = MSLayerArray.arrayWithLayers(newSelection)
+    MSMaskWithShape.createMaskWithShapeForLayers(group)
+    // log(newSelection[1])
+    newSelection[1].setIsSelected(true);
+  } else {
+    [doc showMessage: pluginName + ': select something']
+  }
+};
