@@ -7,6 +7,7 @@ var Rectangle = require('sketch/dom').Rectangle
 var Shape = require('sketch/dom').Shape
 var Group = require('sketch/dom').Group
 var selection = document.selectedLayers
+var artboardsFromSelection = context.selection.valueForKeyPath("@distinctUnionOfObjects.parentArtboard")
 
 selection.forEach( layer => {
 
@@ -14,18 +15,19 @@ selection.forEach( layer => {
 	layerX = layer.frame.x
 	layerY = layer.frame.y
 	layerWidth = layer.frame.width
-	layerHeight = layer.frame.height
+  layerHeight = layer.frame.height
+  groupName = layer.name + '-masked'
+  parent = artboardsFromSelection.length > 0 ? artboardsFromSelection[0] : page
 
-    
-	// create a group
+  // create a group
 	var group = new Group({
-		name: 'masked group',
-		parent: page,
+		name: groupName,
+    parent: parent,
 	})
 
-	// create rect at location inside of group
+	// create rect at location of selection
 	var rect = new Rectangle(layer.frame.x, layer.frame.y, layer.frame.width, layer.frame.height)
-	
+  
 	var mask = new Shape({
 		name: 'mask',
 		frame: rect,
