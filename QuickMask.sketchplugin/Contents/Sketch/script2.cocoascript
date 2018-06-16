@@ -9,7 +9,6 @@ var Group = require('sketch/dom').Group
 var selection = document.selectedLayers
 
 selection.forEach( layer => {
-	log(layer.frame.x)
 
 	// get x, y, width, height
 	layerX = layer.frame.x
@@ -17,11 +16,6 @@ selection.forEach( layer => {
 	layerWidth = layer.frame.width
 	layerHeight = layer.frame.height
 
-	// create a group
-	var group = new Group({
-		name: 'masked group',
-		parent: page,
-	})
 
 	// create rect at location inside of group
 	var rect = new Rectangle(layer.frame.x, layer.frame.y, layer.frame.width, layer.frame.height)
@@ -29,22 +23,12 @@ selection.forEach( layer => {
 	var mask = new Shape({
 		name: 'mask',
 		frame: rect,
-		parent: group,
+		parent: page,
 		style: {
 			fills: [{ color: '#c0ffee', }],
 			borders: [{ enabled: false }],
 		},
 	})
-
-	layer.parent = group
-
-	group.adjustToFit()
-
-	group.layers.forEach( layer => {
-		if (layer.name === 'mask') {
-			log(layer.name)
-		}
-  })
   
   // selection.clear()
   mask.selected = true
