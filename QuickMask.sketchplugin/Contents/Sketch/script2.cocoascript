@@ -12,10 +12,16 @@ selection.forEach( layer => {
 
 	// get x, y, width, height
 	layerX = layer.frame.x
-	layerY = layer.frame.x
+	layerY = layer.frame.y
 	layerWidth = layer.frame.width
 	layerHeight = layer.frame.height
 
+    
+	// create a group
+	var group = new Group({
+		name: 'masked group',
+		parent: page,
+	})
 
 	// create rect at location inside of group
 	var rect = new Rectangle(layer.frame.x, layer.frame.y, layer.frame.width, layer.frame.height)
@@ -23,19 +29,27 @@ selection.forEach( layer => {
 	var mask = new Shape({
 		name: 'mask',
 		frame: rect,
-		parent: page,
+		parent: group,
 		style: {
 			fills: [{ color: '#c0ffee', }],
 			borders: [{ enabled: false }],
 		},
 	})
+
+	layer.parent = group
+
+	group.adjustToFit()
   
-  // selection.clear()
+  selection.clear()
   mask.selected = true
 
 })
 
 
-var newSelection  = context.document.selectedLayers().layers()
-var newGroup = MSLayerArray.arrayWithLayers(newSelection)
-MSMaskWithShape.createMaskWithShapeForLayers(newGroup)
+var newSelection  = context.document.selectedLayers().layers()[0]
+newSelection.hasClippingMask = true;
+newSelection.clippingMaskMode = 0;
+
+
+// var newGroup = MSLayerArray.arrayWithLayers(newSelection)
+// MSMaskWithShape.createMaskWithShapeForLayers(newGroup)
