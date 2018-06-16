@@ -1,35 +1,84 @@
 var quickMask = function(context) {
-  var doc        = context.document;
-  var selection  = context.selection;
-  var pluginName = 'Quick Crop';
+	var pluginName = 'Quick Crop';
+	var doc = context.document;
+	var Document = require('sketch/dom').Document
+	var document = require('sketch/dom').getSelectedDocument()
+	var Page = require('sketch/dom').Page
+	var page = document.selectedPage
+	var Rectangle = require('sketch/dom').Rectangle
+	var Shape = require('sketch/dom').Shape
+	var Group = require('sketch/dom').Group
+	var selection = document.selectedLayers
+	var artboardsFromSelection = context.selection.valueForKeyPath("@distinctUnionOfObjects.parentArtboard")
 
-  var sketch = context.api()
-  var document = sketch.selectedDocument;
-  var page = document.selectedPage;
-  var currentArtboard = doc.currentPage().currentArtboard();
-  // log(currentArtboard)
+	if (selection.length < 1) {
+		[doc showMessage: pluginName + ': select something']
+	} else if (selection.length > 1) {
+		[doc showMessage: pluginName + ': select one item at a time']
+	} else {
+		selection.forEach( layer => {
 
-  if ([selection count] > 0) {
-    var layer = selection[0]
-    var layerRect = [layer rect]
-    var layerFrame = [layer frame]
-    var layerWidth = layerRect.size.width
-    var layerHeight = layerRect.size.height
-    var layerY = layerRect.origin.y
-    var layerX = layerRect.origin.x
-    // log(layerY +  " " + layerX)
+			// get x, y, width, height
+			layerX = layer.frame.x
+			layerY = layer.frame.y
+			layerWidth = layer.frame.width1
+			layerHeight = layer.frame.height
+			groupName = layer.name + '-masked'
+			parent = artboardsFromSelection.length > 0 ? artboardsFromSelection[0] : page
 
-    var newRect = MSRectangleShape.new();
-    newRect.frame = MSRect.rectWithRect(NSMakeRect(layerX, layerY, layerWidth, layerHeight));
-    var rectGroup = MSShapeGroup.shapeWithPath(newRect);
-    [currentArtboard addLayers:[rectGroup]];
-    rectGroup.setIsSelected(true);
-    var newSelection = [doc findSelectedLayers];
-    var group = MSLayerArray.arrayWithLayers(newSelection)
-    MSMaskWithShape.createMaskWithShapeForLayers(group)
-    // log(newSelection[1])
-    newSelection[1].setIsSelected(true);
-  } else {
-    [doc showMessage: pluginName + ': select something']
-  }
+			// create a group
+			var group = new Group({
+				name: groupName,
+				parent: parent,
+			})
+
+			// create rectangle at location of selection
+			var rect = new Rectangle(layer.frame.x, layer.frame.y, layer.frame.width, layer.frame.height)
+			
+			var mask = new Shape({
+				name: 'mask',
+				frame: rect,
+				parent: group,
+				style: {
+					fills: [{ enabled: false }],
+					borders: [{ enabled: false }],
+				},
+			})
+
+			// add layer to it
+			layer.parent = group
+
+			// make sure group fits to contents
+			group.adjustToFit()
+			
+			// make the newly created mask the key selection
+			selection.clear()
+			mask.selected = true
+
+		})
+
+		// set the mask property for the mask layer
+		var newSelection  = updateContext().selection[0]
+		newSelection.hasClippingMask = true;
+		newSelection.clippingMaskMode = 0;
+	}
+	
 };
+
+
+// use this function to force the context refresh.
+// without it, the script won't see the selection change
+function updateContext() {
+	var doc = NSDocumentController.sharedDocumentController().currentDocument();
+
+	if (MSApplicationMetadata.metadata().appVersion > 41.2) {
+			var selection = doc.selectedLayers().layers();
+	} else {
+			var selection = doc.selectedLayers();
+	}
+
+	return {
+			doc : doc,
+			selection : selection
+	}
+}
