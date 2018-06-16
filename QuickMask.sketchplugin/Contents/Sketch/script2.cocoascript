@@ -14,7 +14,7 @@ selection.forEach( layer => {
 	// get x, y, width, height
 	layerX = layer.frame.x
 	layerY = layer.frame.y
-	layerWidth = layer.frame.width
+	layerWidth = layer.frame.width1
   layerHeight = layer.frame.height
   groupName = layer.name + '-masked'
   parent = artboardsFromSelection.length > 0 ? artboardsFromSelection[0] : page
@@ -23,9 +23,12 @@ selection.forEach( layer => {
 	var group = new Group({
 		name: groupName,
     parent: parent,
-	})
+  })
+  
+  // add layer to it
+  layer.parent = group
 
-	// create rect at location of selection
+	// create rectangle at location of selection
 	var rect = new Rectangle(layer.frame.x, layer.frame.y, layer.frame.width, layer.frame.height)
   
 	var mask = new Shape({
@@ -33,21 +36,22 @@ selection.forEach( layer => {
 		frame: rect,
 		parent: group,
 		style: {
-			fills: [{ color: '#c0ffee', }],
+			fills: [{ enabled: false }],
 			borders: [{ enabled: false }],
 		},
 	})
 
-	layer.parent = group
-
+  // make sure group fits to contents
 	group.adjustToFit()
   
+  // make the newly created mask the key selection
   selection.clear()
   mask.selected = true
 
 })
 
 
+// set the mask property for the mask layer
 var newSelection  = context.document.selectedLayers().layers()[0]
 newSelection.hasClippingMask = true;
 newSelection.clippingMaskMode = 0;
