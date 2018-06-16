@@ -7,6 +7,7 @@
       "handlers" : {
         "run" : "quickMask"
       },
+      "shortcut": "cmd shift m",
       "identifier" : "quick-mask"
     }
   ],
@@ -16,14 +17,6 @@
     ],
     "title" : "Quick Mask"
   },
-  "commands": [
-    {
-      "name": "Quick Mask",
-      "identifier": "set",
-      "shortcut": "cmd opt shft m",
-      "script": "script.cocoascript",
-    }
-  ],
   "identifier" : "https://github.com/kupe517/sketch-quick-mask",
   "version" : "1.0",
   "description" : "",
