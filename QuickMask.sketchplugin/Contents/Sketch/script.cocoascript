@@ -1,5 +1,6 @@
 var quickMask = function(context) {
-  
+	var pluginName = 'Quick Crop';
+	var doc = context.document;
 	var Document = require('sketch/dom').Document
 	var document = require('sketch/dom').getSelectedDocument()
 	var Page = require('sketch/dom').Page
@@ -10,56 +11,63 @@ var quickMask = function(context) {
 	var selection = document.selectedLayers
 	var artboardsFromSelection = context.selection.valueForKeyPath("@distinctUnionOfObjects.parentArtboard")
 
-	selection.forEach( layer => {
+	if (selection.length < 1) {
+		[doc showMessage: pluginName + ': select something']
+	} else if (selection.length > 1) {
+		[doc showMessage: pluginName + ': select one item at a time']
+	} else {
+		selection.forEach( layer => {
 
-		// get x, y, width, height
-		layerX = layer.frame.x
-		layerY = layer.frame.y
-		layerWidth = layer.frame.width1
-		layerHeight = layer.frame.height
-		groupName = layer.name + '-masked'
-		parent = artboardsFromSelection.length > 0 ? artboardsFromSelection[0] : page
+			// get x, y, width, height
+			layerX = layer.frame.x
+			layerY = layer.frame.y
+			layerWidth = layer.frame.width1
+			layerHeight = layer.frame.height
+			groupName = layer.name + '-masked'
+			parent = artboardsFromSelection.length > 0 ? artboardsFromSelection[0] : page
 
-		// create a group
-		var group = new Group({
-			name: groupName,
-			parent: parent,
+			// create a group
+			var group = new Group({
+				name: groupName,
+				parent: parent,
+			})
+
+			// create rectangle at location of selection
+			var rect = new Rectangle(layer.frame.x, layer.frame.y, layer.frame.width, layer.frame.height)
+			
+			var mask = new Shape({
+				name: 'mask',
+				frame: rect,
+				parent: group,
+				style: {
+					fills: [{ enabled: false }],
+					borders: [{ enabled: false }],
+				},
+			})
+
+			// add layer to it
+			layer.parent = group
+
+			// make sure group fits to contents
+			group.adjustToFit()
+			
+			// make the newly created mask the key selection
+			selection.clear()
+			mask.selected = true
+
 		})
 
-		// create rectangle at location of selection
-		var rect = new Rectangle(layer.frame.x, layer.frame.y, layer.frame.width, layer.frame.height)
-		
-		var mask = new Shape({
-			name: 'mask',
-			frame: rect,
-			parent: group,
-			style: {
-				fills: [{ enabled: false }],
-				borders: [{ enabled: false }],
-			},
-		})
-
-		// add layer to it
-		layer.parent = group
-
-		// make sure group fits to contents
-		group.adjustToFit()
-		
-		// make the newly created mask the key selection
-		selection.clear()
-		mask.selected = true
-
-	})
-
-	// set the mask property for the mask layer
-	var newSelection  = updateContext().selection[0]
-	newSelection.hasClippingMask = true;
-	newSelection.clippingMaskMode = 0;
-  
+		// set the mask property for the mask layer
+		var newSelection  = updateContext().selection[0]
+		newSelection.hasClippingMask = true;
+		newSelection.clippingMaskMode = 0;
+	}
+	
 };
 
 
-
+// use this function to force the context refresh.
+// without it, the script won't see the selection change
 function updateContext() {
 	var doc = NSDocumentController.sharedDocumentController().currentDocument();
 
